@@ -1,0 +1,38 @@
+{
+    "schemaVersion": 1,
+    "id": "${modId}",
+    "version": "${modVersion}",
+    "name": "${modName}",
+    "description": "",
+    "authors": [
+        "The HuebCraft Team"
+    ],
+    "contact": {},
+    "license": "All rights reserved",
+    "environment": "*",
+    "entrypoints": {
+        "client": [
+            {
+                "adapter": "kotlin",
+                "value": "de.huebcraft.mods.enderio.conduits.client.ClientMain"
+            }
+        ],
+        "main": [
+            {
+                "adapter": "kotlin",
+                "value": "de.huebcraft.mods.enderio.conduits.Main"
+            }
+        ]
+    },
+    "mixins": [
+        "${modId}.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabricLoaderVersion}",
+        "fabric": "*",
+        "fabric-language-kotlin": ">=${fabricKotlinVersion}",
+        "huebcraftconfiglib": "${configlibVersion}",
+        "minecraft": "${minecraftVersion}"
+    },
+    "accessWidener": "${modId}.accesswidener"
+}

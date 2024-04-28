@@ -1,0 +1,5 @@
+include:
+  - project: huebcraft/ci-templates
+    ref: main
+    file:
+      - java-build-publish.yaml
