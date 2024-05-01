@@ -41,3 +41,5 @@ bin/
 
 /run
 /velocity.log
+
+src/main/generated
