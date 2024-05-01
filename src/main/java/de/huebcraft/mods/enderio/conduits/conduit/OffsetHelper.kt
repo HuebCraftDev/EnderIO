@@ -1,5 +1,6 @@
 package de.huebcraft.mods.enderio.conduits.conduit
 
+import de.huebcraft.mods.enderio.conduits.Main
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Direction.Axis
 import net.minecraft.util.math.Vec3i
@@ -18,17 +19,17 @@ object OffsetHelper {
         9 to Vector2i(0, 0),
     )
 
-    private val ZERO = Vector2i(0, 0)
-
     fun offsetConduit(typeIndex: Int, maxTypes: Int): Vector2i {
         if (typeIndex >= maxTypes) {
-            return ZERO
+            Main.LOGGER.warn("IndexOutOfBounds: higher index than existing types")
+            return Vector2i(0, 0)
         }
         if (typeIndex < 0) {
-            return ZERO
+            Main.LOGGER.warn("IndexOutOfBounds: negative index")
+            return Vector2i(0, 0)
         }
         if (maxTypes == 1) {
-            return ZERO
+            return Vector2i(0, 0)
         }
         if (maxTypes == 2) {
             return if (typeIndex == 0) Vector2i(0, -1) else Vector2i(0, 1)
@@ -36,16 +37,17 @@ object OffsetHelper {
         if (maxTypes == 3) {
             return when (typeIndex) {
                 0 -> Vector2i(-1, -1)
-                1 -> ZERO
+                1 -> Vector2i(0, 0)
                 2 -> Vector2i(1, 1)
                 else -> throw IllegalStateException()
             }
         }
         if (maxTypes < 9) {
-            return positions[typeIndex + 1] ?: ZERO
+            return positions[typeIndex + 1] ?: Vector2i(0, 0)
         }
 
-        return ZERO
+        Main.LOGGER.warn("IndexOutOfBounds: fallback was applied")
+        return Vector2i(0, 0)
     }
 
     fun findMainAxis(bundle: ConduitBundle): Axis {

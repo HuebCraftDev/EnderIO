@@ -1,9 +1,10 @@
 package de.huebcraft.mods.enderio.conduits.enderconduits.redstone
 
+import de.huebcraft.mods.enderio.conduits.block.RedstoneEmittingState
 import de.huebcraft.mods.enderio.conduits.conduit.ticker.IIOAwareConduitTicker
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.init.ConduitTags
-import de.huebcraft.mods.enderio.conduits.init.ModBlocks
+import de.huebcraft.mods.enderio.conduits.init.ConduitBlocks
 import de.huebcraft.mods.enderio.conduits.math.InWorldNode
 import de.huebcraft.mods.enderio.conduits.misc.ColorControl
 import dev.gigaherz.graph3.Graph
@@ -20,7 +21,9 @@ class RedstoneConduitTicker : IIOAwareConduitTicker {
     override fun canConnectTo(world: World, pos: BlockPos, direction: Direction): Boolean {
         val neighbor = pos.offset(direction)
         val state = world.getBlockState(neighbor)
-        return state.isIn(ConduitTags.Blocks.REDSTONE_CONNECTABLE) || state.emitsRedstonePower()
+        return state.isIn(ConduitTags.Blocks.REDSTONE_CONNECTABLE) || (state as RedstoneEmittingState).`enderio$emitsRedstone`(
+            world, neighbor, direction
+        )
     }
 
     override fun tickGraph(
@@ -61,7 +64,7 @@ class RedstoneConduitTicker : IIOAwareConduitTicker {
             }
         }
         for (insert in inserts) {
-            world.updateNeighbor(insert.move(), ModBlocks.CONDUIT(), insert.pos)
+            world.updateNeighbor(insert.move(), ConduitBlocks.CONDUIT(), insert.pos)
         }
     }
 

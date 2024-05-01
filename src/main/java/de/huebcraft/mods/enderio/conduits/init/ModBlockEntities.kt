@@ -10,7 +10,7 @@ import team.reborn.energy.api.EnergyStorage
 
 object ModBlockEntities : Registrar<BlockEntityType<*>>(Registries.BLOCK_ENTITY_TYPE) {
     val CONDUIT_BLOCK_ENTITY = register("conduit") {
-        FabricBlockEntityTypeBuilder.create(::ConduitBlockEntity, ModBlocks.CONDUIT()).build()
+        FabricBlockEntityTypeBuilder.create(::ConduitBlockEntity, ConduitBlocks.CONDUIT()).build()
     }
 
     override fun register() {

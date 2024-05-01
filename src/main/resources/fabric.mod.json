@@ -22,6 +22,12 @@
                 "adapter": "kotlin",
                 "value": "de.huebcraft.mods.enderio.conduits.Main"
             }
+        ],
+        "fabric-datagen": [
+            {
+                "adapter": "kotlin",
+                "value": "de.huebcraft.mods.enderio.conduits.datagen.DataGenerator"
+            }
         ]
     },
     "mixins": [
@@ -31,8 +37,17 @@
         "fabricloader": ">=${fabricLoaderVersion}",
         "fabric": "*",
         "fabric-language-kotlin": ">=${fabricKotlinVersion}",
-        "huebcraftconfiglib": "${configlibVersion}",
         "minecraft": "${minecraftVersion}"
+    },
+    "custom": {
+        "loom:injected_interfaces": {
+            "net/minecraft/class_2248": [
+                "de/huebcraft/mods/enderio/conduits/block/RedstoneEmitter"
+            ],
+            "net/minecraft/class_2680": [
+                "de/huebcraft/mods/enderio/conduits/block/RedstoneEmittingState"
+            ]
+        }
     },
     "accessWidener": "${modId}.accesswidener"
 }

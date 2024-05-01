@@ -1,5 +1,6 @@
 package de.huebcraft.mods.enderio.conduits.conduit.connection
 
+import de.huebcraft.mods.enderio.conduits.Main
 import de.huebcraft.mods.enderio.conduits.block.entity.ConduitBlockEntity
 import de.huebcraft.mods.enderio.conduits.client.model.ConduitRenderData
 import de.huebcraft.mods.enderio.conduits.conduit.ConduitBundle
@@ -74,6 +75,13 @@ class ConduitConnection(val bundle: ConduitBundle) {
         val connected = mutableListOf<IConduitType<*>>()
         for (i in connectionStates.indices) {
             if (connectionStates[i].isConnection()) {
+                if (bundle.types.size <= i) {
+                    for (connectionState in connectionStates) {
+                        Main.LOGGER.info(connectionState)
+                    }
+                    Main.LOGGER.warn("Index out of bounds $i")
+                    break
+                }
                 connected.add(bundle.types[i])
             }
         }
@@ -143,15 +151,9 @@ class ConduitConnection(val bundle: ConduitBundle) {
     @Environment(EnvType.CLIENT)
     fun createConnectionData(): ConduitRenderData.ConnectionData =
         ConduitRenderData.ConnectionData(connectionStates.mapIndexed { index, iConnectionState ->
-            val dynState = iConnectionState as? IConnectionState.DynamicConnectionState
-            bundle.types[index] to ConduitRenderData.ConnectionStateData(
-                iConnectionState as? IConnectionState.StaticConnectionStates,
-                dynState?.insert,
-                dynState?.extract,
-                dynState?.redstoneControl,
-                dynState?.redstoneChannel
-            )
-        }.toTypedArray())
+            if (iConnectionState.isConnection()) return@mapIndexed bundle.types[index] to iConnectionState
+            return@mapIndexed null
+        }.filterNotNull())
 
     fun getConnectionState(index: Int): IConnectionState = connectionStates[index]
 

@@ -33,27 +33,15 @@ project.base.archivesName.set(mavenArtifact)
 
 repositories {
     maven {
-        name = "HuebCraftGitlab"
-        url = uri("https://gitlab.huebcraft.net/api/v4/groups/48/-/packages/maven")
-        authentication {
-            create("header", HttpHeaderAuthentication::class.java) {
-                if (System.getenv("CI_JOB_TOKEN") != null) {
-                    credentials(HttpHeaderCredentials::class) {
-                        name = "Job-Token"
-                        value = System.getenv("CI_JOB_TOKEN")
-                    }
-                } else {
-                    credentials(HttpHeaderCredentials::class) {
-                        name = "Private-Token"
-                        value = project.ext["huebcraftGitlabToken"] as String
-                    }
-                }
-            }
-        }
-    }
-    maven {
         name = "Gigaherz Graph"
         url = uri("https://dogforce-games.com/maven")
+    }
+    maven {
+        name = "Modmaven"
+        url = uri("https://modmaven.dev/")
+        content {
+            includeGroup("appeng")
+        }
     }
 }
 
@@ -66,11 +54,14 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
-    modImplementation("de.huebcraft.mod-libs:configlib:$configlibVersion")
-
     include(modApi("teamreborn:energy:2.3.0") {
         isTransitive = false
     })
+    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.5")!!)!!)
+
+    modCompileOnlyApi("appeng:appliedenergistics2-fabric:15.1.0:api") {
+        exclude("net.fabricmc.fabric-api:fabric-api")
+    }
 
     implementation(include("dev.gigaherz.graph:GraphLib3:3.0.4")!!)
 }
@@ -104,9 +95,14 @@ loom {
     }
 }
 
+fabricApi {
+    configureDataGeneration()
+}
+
 tasks {
     withType<ProcessResources> {
         filteringCharset = "UTF-8"
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
         inputs.properties(templateProps)
         filesMatching("fabric.mod.json") {

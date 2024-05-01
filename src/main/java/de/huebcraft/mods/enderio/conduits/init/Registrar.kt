@@ -1,5 +1,6 @@
 package de.huebcraft.mods.enderio.conduits.init
 
+import de.huebcraft.mods.enderio.build.BuildConstants
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
@@ -17,7 +18,7 @@ sealed class Registrar<T : Any>(private val registry: Registry<T>) {
         override operator fun invoke() = registeredItem
 
         open fun register() {
-            registeredItem = Registry.register(registry, Identifier("hcmcontent", id), itemSupplier())
+            registeredItem = Registry.register(registry, Identifier(BuildConstants.modId, id), itemSupplier())
         }
     }
 
@@ -35,7 +36,6 @@ sealed class BlockRegistrar(registry: Registry<Block>) : Registrar<Block>(regist
     private inner class BlockRegisterData<IT : Block>(
         private val id: String,
         private val withItem: Boolean,
-        private val itemGroup: ItemGroup?,
         itemSupplier: () -> IT,
     ) : RegisterData<IT>(id, itemSupplier) {
         override fun register() {
@@ -43,8 +43,8 @@ sealed class BlockRegistrar(registry: Registry<Block>) : Registrar<Block>(regist
             if (withItem) {
                 Registry.register(
                     Registries.ITEM,
-                    Identifier("hcmcontent", id),
-                    BlockItem(invoke(), FabricItemSettings().group(itemGroup))
+                    Identifier(BuildConstants.modId, id),
+                    BlockItem(invoke(), FabricItemSettings())
                 )
             }
         }
@@ -56,7 +56,6 @@ sealed class BlockRegistrar(registry: Registry<Block>) : Registrar<Block>(regist
     protected fun <IT : Block> register(
         id: String,
         withItem: Boolean = true,
-        itemGroup: ItemGroup? = null,
         itemSupplier: () -> IT,
-    ): () -> IT = BlockRegisterData(id, withItem, itemGroup, itemSupplier).also(items::add)
+    ): () -> IT = BlockRegisterData(id, withItem, itemSupplier).also(items::add)
 }

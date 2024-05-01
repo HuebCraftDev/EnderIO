@@ -7,6 +7,7 @@ import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities.CONDUIT_BLOCK_ENTITY
 import de.huebcraft.mods.enderio.conduits.math.InWorldNode
 import de.huebcraft.mods.enderio.conduits.network.ConduitBundleDataSlot
+import de.huebcraft.mods.enderio.conduits.network.ConduitNetworking
 import de.huebcraft.mods.enderio.conduits.network.ConduitPersistentState
 import dev.gigaherz.graph3.Graph
 import dev.gigaherz.graph3.GraphObject
@@ -14,10 +15,14 @@ import dev.gigaherz.graph3.Mergeable
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -40,10 +45,11 @@ import java.util.function.BiFunction
 
 class ConduitBlockEntity(
     pos: BlockPos, state: BlockState
-) : LazyBlockEntity(CONDUIT_BLOCK_ENTITY(), pos, state), BlockEntityTicker<ConduitBlockEntity>,
+) : BlockEntity(CONDUIT_BLOCK_ENTITY(), pos, state), BlockEntityTicker<ConduitBlockEntity>,
     ExtendedScreenHandlerFactory {
     val bundle = ConduitBundle(::markDirty, pos)
     val shape = ConduitShape()
+    val bundleDataSlot = ConduitBundleDataSlot { bundle }
 
     @Environment(EnvType.CLIENT)
     var clientData: ConduitRenderData = bundle.createRenderData()
@@ -51,16 +57,51 @@ class ConduitBlockEntity(
     var lazyNodeNbt: NbtList = NbtList()
     val lazyNodes = mutableMapOf<IConduitType<*>, InWorldNode<*>>()
 
-    init {
-        addDataSlot(ConduitBundleDataSlot { bundle })
-        addAfterSyncRunnable { updateClient() }
-    }
-
     fun updateClient() {
         clientData = bundle.createRenderData()
         updateShape()
         world?.scheduleBlockRerenderIfNeeded(pos, Blocks.AIR.defaultState, cachedState)
     }
+
+    fun handleConnectionStateUpdate(
+        direction: Direction, type: IConduitType<*>, state: IConnectionState.DynamicConnectionState
+    ) {
+        val connection = bundle.getConnection(direction)
+
+        if (connection.getConnectionState(type) is IConnectionState.DynamicConnectionState) {
+            connection.setConnectionState(type, state)
+            pushIOState(direction, bundle.getNodeFor(type), state)
+        }
+        updateClient()
+        updateConnectionToData(type)
+    }
+
+    fun handleExtendedDataUpdate(type: IConduitType<*>, nbt: NbtCompound) {
+        bundle.getNodeFor(type).extendedConduitData.readNbt(nbt)
+    }
+
+    private fun onLoad() {
+        updateShape()
+        val serverWorld = world as? ServerWorld ?: return
+        sync()
+        bundle.onLoad(serverWorld, pos)
+        for ((type, node) in lazyNodes) {
+            for (direction in Direction.entries) {
+                val otherNode = tryConnectTo(direction, type, forceMerge = false, shouldMergeGraph = false)
+                if (otherNode != null) Graph.connect(node, otherNode)
+            }
+            for (obj in node.getGraph()!!.objects) {
+                obj as? InWorldNode<*> ?: continue
+                unsafeConduitDataConnect(node, obj.extendedConduitData)
+            }
+            ConduitPersistentState.addPotentialGraph(type, node.getGraph()!!, serverWorld)
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : IExtendedConduitData<T>> unsafeConduitDataConnect(
+        node: InWorldNode<T>, otherData: IExtendedConduitData<*>
+    ) = node.extendedConduitData.onConnectTo(otherData as T)
 
     fun isMenuValid(player: PlayerEntity): Boolean {
         if (world!!.getBlockEntity(pos) !== this) return false
@@ -78,6 +119,13 @@ class ConduitBlockEntity(
             }
         }
         super.markRemoved()
+    }
+
+    private fun serverTick(world: World, pos: BlockPos) {
+        if (!world.isClient) {
+            sync()
+            world.markDirty(pos)
+        }
     }
 
     override fun tick(world: World, pos: BlockPos, state: BlockState, blockEntity: ConduitBlockEntity) {
@@ -98,8 +146,7 @@ class ConduitBlockEntity(
                 if (shouldActivate && type.ticker.hasConnectionDelay()) {
                     checkConnection = checkConnection.activate()
                 }
-                val connectionState = bundle.getConnection(direction)
-                    .getConnectionState(type)
+                val connectionState = bundle.getConnection(direction).getConnectionState(type)
                 if (connectionState is IConnectionState.DynamicConnectionState) {
                     if (type.ticker.canConnectTo(world, pos, direction)) continue
                     bundle.getNodeFor(type).clearState(direction)
@@ -115,15 +162,46 @@ class ConduitBlockEntity(
         }
     }
 
+    @Environment(EnvType.CLIENT)
+    fun clientHandleBufferSync(buf: PacketByteBuf) {
+        bundleDataSlot.fromBuffer(buf)
+        updateClient()
+    }
+
+    private fun createBufferSlotUpdate(): PacketByteBuf? {
+        if (!bundleDataSlot.needsUpdate())
+            return null
+        val buf = PacketByteBufs.create()
+        bundleDataSlot.writeBuffer(buf)
+        return buf
+    }
+
+    private fun sync() {
+        val syncData = createBufferSlotUpdate() ?: return
+        for (player in PlayerLookup.tracking(this)) {
+            val buf = PacketByteBufs.create()
+            buf.writeBlockPos(pos)
+            buf.writeByteArray(syncData.array())
+            ServerPlayNetworking.send(player, ConduitNetworking.DATA_SLOT, buf)
+        }
+    }
+
+    override fun toInitialChunkDataNbt(): NbtCompound {
+        val nbt = NbtCompound()
+        writeNbt(nbt)
+        return nbt
+    }
+
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
-        bundle.deserializeNbt(nbt.getCompound("ConduitBundle"))
+        bundleDataSlot.readNbt(nbt.getCompound("ConduitBundle"))
         lazyNodeNbt = nbt.getList("ConduitExtraData", NbtElement.COMPOUND_TYPE.toInt())
+        updateClient()
     }
 
     override fun writeNbt(nbt: NbtCompound) {
         super.writeNbt(nbt)
-        nbt.put("ConduitBundle", bundle.serializeNbt())
+        nbt.put("ConduitBundle", bundleDataSlot.writeNbt(true))
         val list = NbtList()
         for (type in bundle.types) {
             val data = bundle.getNodeFor(type).extendedConduitData
@@ -134,15 +212,17 @@ class ConduitBlockEntity(
 
     override fun setWorld(world: World) {
         super.setWorld(world)
-        if (!world.isClient) loadFromSaveData()
-        TODO("onLoad()")
+        if (!world.isClient) {
+            loadFromSaveData()
+            onLoad()
+        }
     }
 
     override fun getRenderData(): Any = clientData
 
     fun hasType(type: IConduitType<*>): Boolean = bundle.hasType(type)
 
-    fun <T : IExtendedConduitData<T>> addType(type: IConduitType<T>, player: PlayerEntity): RightClickAction {
+    fun <T : IExtendedConduitData<T>> addType(type: IConduitType<T>, player: PlayerEntity?): RightClickAction {
         val action = bundle.addType(world!!, type, player)
         if (!action.hasChanged()) return action
 

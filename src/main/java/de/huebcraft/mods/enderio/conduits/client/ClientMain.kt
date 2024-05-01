@@ -2,6 +2,7 @@ package de.huebcraft.mods.enderio.conduits.client
 
 import de.huebcraft.mods.enderio.build.BuildConstants
 import de.huebcraft.mods.enderio.conduits.client.model.ConduitModelLoadingPlugin
+import de.huebcraft.mods.enderio.conduits.network.ConduitNetworking
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -15,5 +16,9 @@ internal object ClientMain : ClientModInitializer {
     override fun onInitializeClient() {
         ModelLoadingPlugin.register(ConduitModelLoadingPlugin())
         LOGGER.info("ClientMain has been initialized")
+        // TODO Highlight event
+        // TODO Conduit tint for facade
+        // TODO Mipmap level dropped
+        ConduitNetworking.registerClientReceiver()
     }
 }

@@ -2,6 +2,8 @@ package de.huebcraft.mods.enderio.conduits.block
 
 import de.huebcraft.mods.enderio.conduits.block.entity.ConduitBlockEntity
 import de.huebcraft.mods.enderio.conduits.conduit.RightClickAction
+import de.huebcraft.mods.enderio.conduits.conduit.connection.IConnectionState
+import de.huebcraft.mods.enderio.conduits.init.EnderConduitTypes
 import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities
 import de.huebcraft.mods.enderio.conduits.item.ConduitBlockItem
 import de.huebcraft.mods.enderio.conduits.mixin.ItemAccessor
@@ -16,10 +18,8 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.fluid.Fluid
 import net.minecraft.fluid.FluidState
 import net.minecraft.fluid.Fluids
-import net.minecraft.item.Item
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
-import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.StateManager
@@ -31,7 +31,6 @@ import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
-import net.minecraft.util.math.random.Random
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
@@ -39,15 +38,19 @@ import net.minecraft.world.RaycastContext
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 import net.minecraft.world.event.GameEvent
-import kotlin.math.tan
 
-class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggable {
+class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggable, RedstoneEmitter {
     companion object {
         val WATERLOGGED: BooleanProperty = Properties.WATERLOGGED
     }
 
     init {
         defaultState = stateManager.defaultState.with(WATERLOGGED, false)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun getRenderType(state: BlockState?): BlockRenderType {
+        return BlockRenderType.MODEL
     }
 
     @Deprecated("Deprecated in Java")
@@ -258,16 +261,33 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
         return false
     }
 
+    // Tell blocks that don't use enderio$emitsRedstone() that this block might emit redstone, even if there is no redstone conduit
     override fun emitsRedstonePower(state: BlockState?): Boolean {
-        TODO("Need more context")
-        return super.emitsRedstonePower(state)
+        return true
     }
 
+    override fun `enderio$emitsRedstone`(
+        state: BlockState, world: BlockView, pos: BlockPos, direction: Direction?
+    ): Boolean {
+        // FIXME connection state not set
+        val be = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return false
+        return direction != null && be.bundle.types.contains(EnderConduitTypes.REDSTONE()) && be.bundle.getConnection(
+            direction.opposite
+        ).getConnectionState(EnderConduitTypes.REDSTONE()) is IConnectionState.DynamicConnectionState
+    }
+
+    @Deprecated("Deprecated in Java")
     override fun getWeakRedstonePower(
         state: BlockState, world: BlockView, pos: BlockPos, direction: Direction
     ): Int {
         val be = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return 0
-        TODO("Type etc")
-        return super.getWeakRedstonePower(state, world, pos, direction)
+        if (!be.bundle.types.contains(EnderConduitTypes.REDSTONE())) return 0
+        val connectionState =
+            be.bundle.getConnection(direction.opposite).getConnectionState(EnderConduitTypes.REDSTONE())
+        if (connectionState is IConnectionState.DynamicConnectionState && connectionState.isInsert && be.bundle.getNodeFor(
+                EnderConduitTypes.REDSTONE()
+            ).extendedConduitData.isActive(connectionState.insert)
+        ) return 15
+        return 0
     }
 }

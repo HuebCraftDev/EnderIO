@@ -206,8 +206,7 @@ class ConduitPersistentState private constructor() : PersistentState() {
             node
     }
 
-    // TODO Subscribe event
-    private fun serverTick(world: ServerWorld) {
+    fun serverTick(world: ServerWorld) {
         markDirty()
         for (graphs in networks.values) {
             graphs.removeIf { it.objects.isEmpty() || it.objects.iterator().next().graph !== it }

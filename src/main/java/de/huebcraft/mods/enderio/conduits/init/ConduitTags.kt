@@ -7,7 +7,6 @@ import net.minecraft.util.Identifier
 
 object ConduitTags {
     object Blocks {
-        // TODO Provider
         val ENERGY_CABLE = TagKey.of(RegistryKeys.BLOCK, Identifier(BuildConstants.modId, "energy_cable"))
         val REDSTONE_CONNECTABLE = TagKey.of(RegistryKeys.BLOCK, Identifier(BuildConstants.modId, "redstone_connectable"))
     }

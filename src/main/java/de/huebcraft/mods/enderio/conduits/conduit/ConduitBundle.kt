@@ -40,7 +40,7 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
 
     private val connections = EnumMap<Direction, ConduitConnection>(Direction::class.java)
 
-    val types = mutableListOf<IConduitType<*>>()
+    val types = arrayListOf<IConduitType<*>>()
 
     private val nodes = mutableMapOf<IConduitType<*>, InWorldNode<*>>()
 
@@ -54,7 +54,7 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
     }
 
     fun <T : IExtendedConduitData<T>> addType(
-        world: World, type: IConduitType<T>, player: PlayerEntity
+        world: World, type: IConduitType<T>, player: PlayerEntity?
     ): RightClickAction {
         if (types.size == MAX_TYPES || types.contains(type)) return RightClickAction.Blocked
 
@@ -101,7 +101,7 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
         return RightClickAction.Insert
     }
 
-    protected fun onLoad(world: World, pos: BlockPos) {
+    fun onLoad(world: World, pos: BlockPos) {
         for (type in types) {
             getNodeFor(type).extendedConduitData.onCreated(type, world, pos, null)
         }
@@ -135,7 +135,7 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
         }
         nbt.put(KEY_CONNECTIONS, connectionsNbt)
         // TODO Facades
-        if (FabricLoader.getInstance().environmentType !== EnvType.SERVER) return nbt
+        if (isClient()) return nbt
         val nodeNbt = NbtList()
         for ((type, node) in nodes) {
             val data = node.extendedConduitData.serializeRenderNbt()
@@ -176,7 +176,7 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
         }
         // TODO Facades
         nodes.entries.removeIf { !types.contains(it.key) }
-        if (FabricLoader.getInstance().environmentType === EnvType.SERVER) {
+        if (!isClient()) {
             for (type in types) {
                 if (nodes.containsKey(type)) {
                     for (direction in Direction.entries) {
@@ -208,6 +208,12 @@ class ConduitBundle(val onDirty: () -> Unit, val pos: BlockPos) {
                 }
             }
         }
+    }
+
+    private fun isClient(): Boolean {
+        if (FabricLoader.getInstance().environmentType === EnvType.SERVER) return false
+        val integratedServer = MinecraftClient.getInstance().server?.thread ?: return false
+        return integratedServer !== Thread.currentThread()
     }
 
     fun getConnection(direction: Direction): ConduitConnection = connections[direction]!!
