@@ -22,6 +22,8 @@ interface IExtendedConduitData<T : IExtendedConduitData<T>> {
 
     fun serializeRenderNbt(): NbtCompound = NbtCompound()
 
+    fun serializeGuiNbt(): NbtCompound = NbtCompound()
+
     fun readNbt(nbt: NbtCompound)
 
     fun writeNbt(): NbtCompound

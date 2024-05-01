@@ -3,6 +3,7 @@ package de.huebcraft.mods.enderio.conduits.misc
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
+import org.joml.Vector2ic
 
 interface IIcon {
     companion object {
@@ -11,17 +12,17 @@ interface IIcon {
 
     val textureLocation: Identifier
 
-    val iconSize: Vector2i
+    val iconSize: Vector2ic
 
-    val renderSize: Vector2i
+    val renderSize: Vector2ic
         get() = iconSize
 
-    val texturePosition: Vector2i
+    val texturePosition: Vector2ic
 
     val tooltip: Text
         get() = Text.empty()
 
-    val textureSize: Vector2i
+    val textureSize: Vector2ic
         get() = DEFAULT_TEXTURE_SIZE
 
     fun shouldRender(): Boolean = true

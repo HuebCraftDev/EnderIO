@@ -8,7 +8,7 @@ import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.registry.Registries
 import team.reborn.energy.api.EnergyStorage
 
-object ModBlockEntities : Registrar<BlockEntityType<*>>(Registries.BLOCK_ENTITY_TYPE) {
+data object ModBlockEntities : Registrar<BlockEntityType<*>>(Registries.BLOCK_ENTITY_TYPE) {
     val CONDUIT_BLOCK_ENTITY = register("conduit") {
         FabricBlockEntityTypeBuilder.create(::ConduitBlockEntity, ConduitBlocks.CONDUIT()).build()
     }

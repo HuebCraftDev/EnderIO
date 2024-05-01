@@ -4,8 +4,6 @@ import de.huebcraft.mods.enderio.conduits.conduit.SlotType
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.misc.ColorControl
 import de.huebcraft.mods.enderio.conduits.misc.RedstoneControl
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.math.BlockPos
@@ -83,6 +81,59 @@ sealed interface IConnectionState {
                 SlotType.FILTER_INSERT -> filterInsert
                 SlotType.UPGRADE_EXTRACT -> upgradeExtract
             }
+        }
+
+        fun withItem(type: SlotType, stack: ItemStack): DynamicConnectionState {
+            val items = mutableMapOf<SlotType, ItemStack>()
+            for (type1 in SlotType.entries) {
+                items[type1] = if (type1 === type) stack else getItem(type1)
+            }
+            return DynamicConnectionState(
+                isInsert, insert, isExtract, extract, redstoneControl, redstoneChannel,
+                items[SlotType.FILTER_INSERT]!!, items[SlotType.FILTER_EXTRACT]!!, items[SlotType.UPGRADE_EXTRACT]!!
+            )
+        }
+
+        fun withEnabled(forExtract: Boolean, value: Boolean): DynamicConnectionState {
+            return DynamicConnectionState(
+                if (!forExtract) value else isInsert,
+                insert,
+                if (forExtract) value else isExtract,
+                extract,
+                redstoneControl,
+                redstoneChannel,
+                filterInsert,
+                filterExtract,
+                upgradeExtract
+            )
+        }
+
+        fun withColor(forExtract: Boolean, value: ColorControl?): DynamicConnectionState {
+            return DynamicConnectionState(
+                isInsert,
+                (if (!forExtract) value else insert)!!,
+                isExtract,
+                (if (forExtract) value else extract)!!,
+                redstoneControl,
+                redstoneChannel,
+                filterInsert,
+                filterExtract,
+                upgradeExtract
+            )
+        }
+
+        fun withRedstoneMode(value: RedstoneControl?): DynamicConnectionState {
+            return DynamicConnectionState(
+                isInsert, insert, isExtract, extract,
+                value!!, redstoneChannel, filterInsert, filterExtract, upgradeExtract
+            )
+        }
+
+        fun withRedstoneChannel(value: ColorControl?): DynamicConnectionState {
+            return DynamicConnectionState(
+                isInsert, insert, isExtract, extract, redstoneControl,
+                value!!, filterInsert, filterExtract, upgradeExtract
+            )
         }
 
         fun isEmpty(): Boolean = !isInsert && !isExtract

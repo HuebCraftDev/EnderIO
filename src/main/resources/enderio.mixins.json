@@ -10,10 +10,12 @@
     "ItemUsageContextAccessor",
     "RedstoneViewMixin",
     "RedstoneWireBlockMixin",
-    "RegistriesMixin"
+    "RegistriesMixin",
+    "SlotAccessor"
   ],
   "client": [
-    "ClientPlayerInteractionManagerMixin"
+    "ClientPlayerInteractionManagerMixin",
+    "ScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

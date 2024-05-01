@@ -11,7 +11,7 @@ import net.minecraft.registry.Registry
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-object ConduitItems : Registrar<Item>(Registries.ITEM) {
+data object ConduitItems : Registrar<Item>(Registries.ITEM) {
     val CONDUITS = mutableListOf<() -> ConduitBlockItem>()
     val CONDUIT_GROUP = FabricItemGroup.builder().displayName(Text.translatable("enderio-conduits.itemgroup")).entries { displayContext, entries ->
         entries.addAll(items.map { (it.invoke() as Item).defaultStack })

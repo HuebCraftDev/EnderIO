@@ -59,9 +59,10 @@ dependencies {
     })
     include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.5")!!)!!)
 
-    modCompileOnlyApi("appeng:appliedenergistics2-fabric:15.1.0:api") {
+    modCompileOnlyApi("appeng:appliedenergistics2-fabric:15.1.0") {
         exclude("net.fabricmc.fabric-api:fabric-api")
     }
+    modRuntimeOnly("appeng:appliedenergistics2-fabric:15.1.0")
 
     implementation(include("dev.gigaherz.graph:GraphLib3:3.0.4")!!)
 }

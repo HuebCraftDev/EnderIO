@@ -55,7 +55,7 @@ abstract class LookupAwareConduitTicker<T> : IIOAwareConduitTicker {
     }
 
     override fun canConnectTo(world: World, pos: BlockPos, direction: Direction): Boolean =
-        getLookup().find(world, pos, direction) != null
+        getLookup().find(world, pos.offset(direction), direction.opposite) != null
 
     protected abstract fun tickLookupGraph(
         type: IConduitType<*>,
@@ -66,7 +66,7 @@ abstract class LookupAwareConduitTicker<T> : IIOAwareConduitTicker {
         isRedstoneActive: (ServerWorld, BlockPos, ColorControl) -> Boolean
     )
 
-    protected abstract fun getLookup(): BlockApiLookup<T, Direction>
+    protected abstract fun getLookup(): BlockApiLookup<T, Direction?>
 
     inner class LookupConnection(val lookup: T, val data: IExtendedConduitData<*>, val direction: Direction)
 }

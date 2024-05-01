@@ -42,7 +42,7 @@ class EnergyConduitTicker : LookupAwareConduitTicker<EnergyStorage>() {
         // TODO
     }
 
-    override fun getLookup(): BlockApiLookup<EnergyStorage, Direction> = EnergyStorage.SIDED
+    override fun getLookup(): BlockApiLookup<EnergyStorage, Direction?> = EnergyStorage.SIDED
 
     override fun getTickRate(): Int = 1
 

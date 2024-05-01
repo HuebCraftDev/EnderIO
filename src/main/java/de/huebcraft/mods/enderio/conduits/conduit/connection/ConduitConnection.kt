@@ -4,6 +4,7 @@ import de.huebcraft.mods.enderio.conduits.Main
 import de.huebcraft.mods.enderio.conduits.block.entity.ConduitBlockEntity
 import de.huebcraft.mods.enderio.conduits.client.model.ConduitRenderData
 import de.huebcraft.mods.enderio.conduits.conduit.ConduitBundle
+import de.huebcraft.mods.enderio.conduits.conduit.SlotType
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.math.InWorldNode
 import de.huebcraft.mods.enderio.conduits.misc.ColorControl
@@ -166,5 +167,10 @@ class ConduitConnection(val bundle: ConduitBundle) {
     private fun setConnectionState(index: Int, state: IConnectionState) {
         connectionStates[index] = state
         bundle.incrementDataVersion()
+    }
+
+    fun setItem(type: SlotType, conduitIndex: Int, stack: ItemStack) {
+        val origState = connectionStates[conduitIndex] as? IConnectionState.DynamicConnectionState ?: return
+        connectionStates[conduitIndex] = origState.withItem(type, stack)
     }
 }

@@ -3,6 +3,7 @@ package de.huebcraft.mods.enderio.conduits.block
 import de.huebcraft.mods.enderio.conduits.block.entity.ConduitBlockEntity
 import de.huebcraft.mods.enderio.conduits.conduit.RightClickAction
 import de.huebcraft.mods.enderio.conduits.conduit.connection.IConnectionState
+import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.init.EnderConduitTypes
 import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities
 import de.huebcraft.mods.enderio.conduits.item.ConduitBlockItem
@@ -20,6 +21,7 @@ import net.minecraft.fluid.FluidState
 import net.minecraft.fluid.Fluids
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.StateManager
@@ -42,6 +44,22 @@ import net.minecraft.world.event.GameEvent
 class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggable, RedstoneEmitter {
     companion object {
         val WATERLOGGED: BooleanProperty = Properties.WATERLOGGED
+
+        fun canBeOrIsValidConnection(
+            blockEntity: ConduitBlockEntity, type: IConduitType<*>, direction: Direction
+        ): Boolean = blockEntity.bundle.getConnection(direction)
+            .getConnectionState(type) is IConnectionState.DynamicConnectionState || canBeValidConnection(
+            blockEntity, type, direction
+        )
+
+        fun canBeValidConnection(
+            blockEntity: ConduitBlockEntity, type: IConduitType<*>, direction: Direction
+        ): Boolean {
+            val state = blockEntity.bundle.getConnection(direction).getConnectionState(type)
+            return state is IConnectionState.StaticConnectionStates && state === IConnectionState.StaticConnectionStates.DISABLED && blockEntity.world!!.getBlockEntity(
+                blockEntity.pos.offset(direction)
+            ) !is ConduitBlockEntity
+        }
     }
 
     init {
@@ -192,9 +210,49 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
     private fun handleScreen(
         blockEntity: ConduitBlockEntity, player: PlayerEntity, hit: BlockHitResult, isClient: Boolean
     ): ActionResult? {
-        // TODO
+        val openInformation = getOpenInformation(blockEntity, hit) ?: return null
+        if (player is ServerPlayerEntity) {
+            player.openHandledScreen(blockEntity.getScreenHandlerFactory(openInformation.direction, openInformation.type))
+        }
+        return ActionResult.success(isClient)
+    }
+
+    private fun getOpenInformation(conduit: ConduitBlockEntity, hit: BlockHitResult): OpenInformation? {
+        val type = conduit.shape.getConduit(hit.blockPos, hit)
+        var direction = conduit.shape.getDirection(hit.blockPos, hit)
+
+        if (direction != null && type != null) {
+            if (canBeOrIsValidConnection(conduit, type, direction)) return OpenInformation(direction, type)
+        }
+        if (type != null) {
+            direction = hit.side
+            if (canBeValidConnection(conduit, type, direction)) return OpenInformation(direction, type)
+            for (potential in Direction.entries) {
+                if (canBeValidConnection(conduit, type, potential)) return OpenInformation(potential, type)
+            }
+        }
+        val bundle = conduit.bundle
+        for (potential in Direction.entries) {
+            if (bundle.getConnection(potential).isEnd()) {
+                for (potentialType in bundle.types) {
+                    if (bundle.getConnection(potential)
+                            .getConnectionState(potentialType) is IConnectionState.DynamicConnectionState
+                    ) return OpenInformation(potential, potentialType)
+                }
+                throw IllegalStateException("couldn't find connection even though it should be present")
+            }
+        }
+        for (potential in Direction.entries) {
+            if (conduit.world!!.getBlockEntity(conduit.pos.offset(potential)) !is ConduitBlockEntity) {
+                for (potentialType in bundle.types) {
+                    if (canBeValidConnection(conduit, potentialType, potential)) return OpenInformation(potential, potentialType)
+                }
+            }
+        }
         return null
     }
+
+    private data class OpenInformation(val direction: Direction, val type: IConduitType<*>)
 
     override fun getPickStack(world: BlockView, pos: BlockPos, state: BlockState): ItemStack {
         if (world !is ClientWorld) return super.getPickStack(world, pos, state)
@@ -269,7 +327,7 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
     override fun `enderio$emitsRedstone`(
         state: BlockState, world: BlockView, pos: BlockPos, direction: Direction?
     ): Boolean {
-        // FIXME connection state not set
+        // FIXME connection state not set (enderio issue)
         val be = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return false
         return direction != null && be.bundle.types.contains(EnderConduitTypes.REDSTONE()) && be.bundle.getConnection(
             direction.opposite

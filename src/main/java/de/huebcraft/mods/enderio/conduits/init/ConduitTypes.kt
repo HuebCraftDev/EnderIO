@@ -10,7 +10,7 @@ import net.minecraft.registry.SimpleRegistry
 import net.minecraft.util.Identifier
 
 object ConduitTypes {
-    val CONDUIT_TYPES: RegistryKey<Registry<IConduitType<*>>> = RegistryKey.ofRegistry(Identifier(BuildConstants.modId, "conduit_types"))
+    private val CONDUIT_TYPES: RegistryKey<Registry<IConduitType<*>>> = RegistryKey.ofRegistry(Identifier(BuildConstants.modId, "conduit_types"))
     val REGISTRY: SimpleRegistry<IConduitType<*>> =
         FabricRegistryBuilder.createSimple(CONDUIT_TYPES)
             .attribute(RegistryAttribute.SYNCED).buildAndRegister()

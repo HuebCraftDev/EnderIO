@@ -4,11 +4,15 @@ import de.huebcraft.mods.enderio.conduits.client.model.ConduitRenderData
 import de.huebcraft.mods.enderio.conduits.conduit.*
 import de.huebcraft.mods.enderio.conduits.conduit.connection.IConnectionState
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
+import de.huebcraft.mods.enderio.conduits.init.ConduitTypes
 import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities.CONDUIT_BLOCK_ENTITY
 import de.huebcraft.mods.enderio.conduits.math.InWorldNode
 import de.huebcraft.mods.enderio.conduits.network.ConduitBundleDataSlot
 import de.huebcraft.mods.enderio.conduits.network.ConduitNetworking
 import de.huebcraft.mods.enderio.conduits.network.ConduitPersistentState
+import de.huebcraft.mods.enderio.conduits.screen.ConduitScreenHandler
+import de.huebcraft.mods.enderio.conduits.screen.ItemHandler
+import de.huebcraft.mods.enderio.conduits.screen.SlotData
 import dev.gigaherz.graph3.Graph
 import dev.gigaherz.graph3.GraphObject
 import dev.gigaherz.graph3.Mergeable
@@ -27,11 +31,16 @@ import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventories
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtList
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.listener.ClientPlayPacketListener
+import net.minecraft.network.packet.Packet
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
@@ -45,17 +54,16 @@ import java.util.function.BiFunction
 
 class ConduitBlockEntity(
     pos: BlockPos, state: BlockState
-) : BlockEntity(CONDUIT_BLOCK_ENTITY(), pos, state), BlockEntityTicker<ConduitBlockEntity>,
-    ExtendedScreenHandlerFactory {
+) : BlockEntity(CONDUIT_BLOCK_ENTITY(), pos, state), BlockEntityTicker<ConduitBlockEntity> {
     val bundle = ConduitBundle(::markDirty, pos)
     val shape = ConduitShape()
-    val bundleDataSlot = ConduitBundleDataSlot { bundle }
+    private val bundleDataSlot = ConduitBundleDataSlot { bundle }
 
     @Environment(EnvType.CLIENT)
-    var clientData: ConduitRenderData = bundle.createRenderData()
-    var checkConnection = UpdateState.NONE
-    var lazyNodeNbt: NbtList = NbtList()
-    val lazyNodes = mutableMapOf<IConduitType<*>, InWorldNode<*>>()
+    private var clientData: ConduitRenderData = bundle.createRenderData()
+    private var checkConnection = UpdateState.NONE
+    private var lazyNodeNbt: NbtList = NbtList()
+    private val lazyNodes = mutableMapOf<IConduitType<*>, InWorldNode<*>>()
 
     fun updateClient() {
         clientData = bundle.createRenderData()
@@ -169,8 +177,7 @@ class ConduitBlockEntity(
     }
 
     private fun createBufferSlotUpdate(): PacketByteBuf? {
-        if (!bundleDataSlot.needsUpdate())
-            return null
+        if (!bundleDataSlot.needsUpdate()) return null
         val buf = PacketByteBufs.create()
         bundleDataSlot.writeBuffer(buf)
         return buf
@@ -192,6 +199,7 @@ class ConduitBlockEntity(
         return nbt
     }
 
+    // TODO client data not synced on update (enderio issue)
     override fun readNbt(nbt: NbtCompound) {
         super.readNbt(nbt)
         bundleDataSlot.readNbt(nbt.getCompound("ConduitBundle"))
@@ -208,6 +216,10 @@ class ConduitBlockEntity(
             list.add(data.writeNbt())
         }
         nbt.put("ConduitExtraData", list)
+    }
+
+    override fun toUpdatePacket(): Packet<ClientPlayPacketListener> {
+        return BlockEntityUpdateS2CPacket.create(this)
     }
 
     override fun setWorld(world: World) {
@@ -477,15 +489,111 @@ class ConduitBlockEntity(
         fun activate(): UpdateState = NEXT_NEXT
     }
 
-    override fun createMenu(syncId: Int, playerInventory: PlayerInventory?, player: PlayerEntity?): ScreenHandler? {
-        TODO("Not yet implemented")
+    fun getItemHandler(): ItemHandler = object : ItemHandler {
+        override val slots: Int
+            get() = 3 * ConduitBundle.MAX_TYPES * 6
+
+        override fun canInsert(index: Int, stack: ItemStack): Boolean = index < slots
+
+        override fun getStack(index: Int): ItemStack {
+            if (index >= slots) return ItemStack.EMPTY
+
+            val data = SlotData.of(index)
+            if (data.conduitIndex >= bundle.types.size) return ItemStack.EMPTY
+
+            val connectionState = bundle.getConnection(data.direction)
+                .getConnectionState(data.conduitIndex) as? IConnectionState.DynamicConnectionState
+                ?: return ItemStack.EMPTY
+
+            val conduitData = bundle.types[data.conduitIndex].menuData
+            if ((data.slotType == SlotType.FILTER_EXTRACT && conduitData.hasFilterExtract) || (data.slotType == SlotType.FILTER_INSERT && conduitData.hasFilterInsert) || (data.slotType == SlotType.UPGRADE_EXTRACT && conduitData.hasUpgrade)) {
+                return connectionState.getItem(data.slotType)
+            }
+            return ItemStack.EMPTY
+        }
+
+        override fun setStack(index: Int, stack: ItemStack) {
+            if (index >= slots) return
+
+            val data = SlotData.of(index)
+            if (data.conduitIndex >= bundle.types.size) return
+
+            val connection = bundle.getConnection(data.direction)
+            val conduitData = bundle.types[data.conduitIndex].menuData
+            if ((data.slotType == SlotType.FILTER_EXTRACT && conduitData.hasFilterExtract) || (data.slotType == SlotType.FILTER_INSERT && conduitData.hasFilterInsert) || (data.slotType == SlotType.UPGRADE_EXTRACT && conduitData.hasUpgrade)) {
+                connection.setItem(data.slotType, data.conduitIndex, stack)
+            }
+        }
+
+        override fun getMaxItemCount(index: Int): Int = if (index % 3 == 2) 64 else 1
+
+        override fun insertStack(index: Int, stack: ItemStack, simulated: Boolean): ItemStack {
+            if (stack.isEmpty) return ItemStack.EMPTY
+
+            if (!canInsert(index, stack)) return stack
+
+            val existing = getStack(index)
+            var limit = getMaxItemCount(index).coerceAtMost(stack.maxCount)
+            if (!existing.isEmpty) {
+                if (!ItemStack.canCombine(stack, existing)) return stack
+                limit -= existing.count
+            }
+
+            if (limit <= 0) return stack
+
+            val reachedLimit = stack.count > limit
+            if (!simulated) {
+                if (existing.isEmpty) {
+                    setStack(index, if (reachedLimit) copyStackWithSize(stack, limit) else stack)
+                } else {
+                    existing.increment(if (reachedLimit) limit else stack.count)
+                }
+            }
+            return if (reachedLimit) copyStackWithSize(stack, stack.count - limit) else ItemStack.EMPTY
+        }
+
+        override fun takeStack(index: Int, amount: Int, simulated: Boolean): ItemStack {
+            if (amount == 0) return ItemStack.EMPTY
+
+            val existing = getStack(index)
+            if (existing.isEmpty) return ItemStack.EMPTY
+            val toExtract = amount.coerceAtMost(existing.maxCount)
+
+            if (existing.count <= toExtract) {
+                if (!simulated) {
+                    setStack(index, ItemStack.EMPTY)
+                    return existing
+                } else {
+                    return existing.copy()
+                }
+            } else {
+                if (!simulated) {
+                    setStack(index, copyStackWithSize(existing, existing.count - toExtract))
+                }
+                return copyStackWithSize(existing, toExtract)
+            }
+        }
+
+        private fun copyStackWithSize(stack: ItemStack, size: Int): ItemStack {
+            if (size == 0) return ItemStack.EMPTY
+            val copy = stack.copy()
+            copy.count = size
+            return copy
+        }
     }
 
-    override fun getDisplayName(): Text {
-        TODO("Not yet implemented")
-    }
+    fun getScreenHandlerFactory(direction: Direction, type: IConduitType<*>): ExtendedScreenHandlerFactory =
+        object : ExtendedScreenHandlerFactory {
+            override fun createMenu(
+                syncId: Int, playerInventory: PlayerInventory, player: PlayerEntity
+            ): ScreenHandler = ConduitScreenHandler(this@ConduitBlockEntity, playerInventory, syncId, direction, type)
 
-    override fun writeScreenOpeningData(player: ServerPlayerEntity?, buf: PacketByteBuf?) {
-        TODO("Not yet implemented")
-    }
+            override fun getDisplayName(): Text = cachedState.block.name
+
+            override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
+                buf.writeBlockPos(pos)
+                buf.writeEnumConstant(direction)
+                buf.writeInt(ConduitTypes.REGISTRY.getRawId(type))
+            }
+        }
 }

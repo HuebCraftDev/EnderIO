@@ -1,10 +1,7 @@
 package de.huebcraft.mods.enderio.conduits
 
 import de.huebcraft.mods.enderio.build.BuildConstants
-import de.huebcraft.mods.enderio.conduits.init.ConduitBlocks
-import de.huebcraft.mods.enderio.conduits.init.ConduitItems
-import de.huebcraft.mods.enderio.conduits.init.EnderConduitTypes
-import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities
+import de.huebcraft.mods.enderio.conduits.init.*
 import de.huebcraft.mods.enderio.conduits.network.ConduitNetworking
 import de.huebcraft.mods.enderio.conduits.network.ConduitPersistentState
 import net.fabricmc.api.ModInitializer
@@ -26,6 +23,7 @@ internal object Main : ModInitializer {
         ModBlockEntities.register()
         ConduitItems.register()
         EnderConduitTypes.register()
+        ConduitScreenHandlers.register()
 
         PlayerBlockBreakEvents.BEFORE.register { world: World, playerEntity: PlayerEntity, blockPos: BlockPos, blockState: BlockState, blockEntity: BlockEntity? ->
             val conduitBlock = ConduitBlocks.CONDUIT()

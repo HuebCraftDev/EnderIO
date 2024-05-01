@@ -3,6 +3,7 @@ package de.huebcraft.mods.enderio.conduits.misc
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
+import org.joml.Vector2ic
 
 enum class ColorControl(val color: Int, val colorActive: Int) : IIcon {
     GREEN(-0xc4aee6, -0xb99ee1),
@@ -35,12 +36,12 @@ enum class ColorControl(val color: Int, val colorActive: Int) : IIcon {
     override val tooltip: Text
         get() = Text.literal(name.lowercase().replace('_', ' '))
 
-    override val iconSize: Vector2i
+    override val iconSize: Vector2ic
         get() = SIZE
 
-    override val texturePosition: Vector2i
+    override val texturePosition: Vector2ic
         get() = pos
 
-    override val textureSize: Vector2i
+    override val textureSize: Vector2ic
         get() = Vector2i(256, 16)
 }
