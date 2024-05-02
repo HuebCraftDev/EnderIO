@@ -2,8 +2,8 @@ package de.huebcraft.mods.enderio.conduits.conduit.type
 
 import de.huebcraft.mods.enderio.conduits.conduit.IClientConduitData
 import de.huebcraft.mods.enderio.conduits.conduit.IConduitMenuData
-import de.huebcraft.mods.enderio.conduits.conduit.ticker.IConduitTicker
 import de.huebcraft.mods.enderio.conduits.conduit.IExtendedConduitData
+import de.huebcraft.mods.enderio.conduits.conduit.ticker.IConduitTicker
 import de.huebcraft.mods.enderio.conduits.init.ConduitTypes
 import de.huebcraft.mods.enderio.conduits.math.InWorldNode
 import de.huebcraft.mods.enderio.conduits.misc.RedstoneControl
@@ -34,14 +34,14 @@ interface IConduitType<T : IExtendedConduitData<T>> {
 
     fun createExtendedConduitData(world: World, pos: BlockPos): T
 
-    fun <K> proxyLookup(
-        lookup: BlockApiLookup<K, Direction?>,
+    fun <A, C> proxyLookup(
+        lookup: BlockApiLookup<A, C>,
         extendedConduitData: T,
         world: World,
         pos: BlockPos,
         direction: Direction?,
         state: InWorldNode.IOState?
-    ): K? = null
+    ): A? = null
 
     fun getDefaultConnection(world: World, pos: BlockPos, direction: Direction): ConduitConnectionData =
         ConduitConnectionData(isInsert = false, isExtract = true, control = RedstoneControl.NEVER_ACTIVE)

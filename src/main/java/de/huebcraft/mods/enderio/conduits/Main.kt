@@ -1,5 +1,7 @@
 package de.huebcraft.mods.enderio.conduits
 
+import de.huebcraft.mods.enderio.api.integration.EnderIOPlugin
+import de.huebcraft.mods.enderio.api.integration.IntegrationManager
 import de.huebcraft.mods.enderio.build.BuildConstants
 import de.huebcraft.mods.enderio.conduits.init.*
 import de.huebcraft.mods.enderio.conduits.network.ConduitNetworking
@@ -7,6 +9,7 @@ import de.huebcraft.mods.enderio.conduits.network.ConduitPersistentState
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -34,5 +37,9 @@ internal object Main : ModInitializer {
         }
         ConduitNetworking.registerServerReceiver()
         ServerTickEvents.END_WORLD_TICK.register { ConduitPersistentState.get(it).serverTick(it) }
+
+        val entrypoints = FabricLoader.getInstance().getEntrypoints(BuildConstants.modId, EnderIOPlugin::class.java)
+        IntegrationManager.ALL_INTEGRATIONS.forEach(EnderIOPlugin::onEnderIOInitialized)
+        entrypoints.forEach(EnderIOPlugin::onEnderIOInitialized)
     }
 }

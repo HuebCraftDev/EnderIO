@@ -22,9 +22,9 @@ internal object ClientMain : ClientModInitializer {
     override fun onInitializeClient() {
         ModelLoadingPlugin.register(ConduitModelLoadingPlugin())
         LOGGER.info("ClientMain has been initialized")
-        // TODO Highlight event
         // TODO Conduit tint for facade
         // TODO Mipmap level dropped
+        // TODO Translations
         HandledScreens.register(ConduitScreenHandlers.CONDUIT_SCREEN_HANDLER(), ::ConduitScreen)
         BlockRenderLayerMap.INSTANCE.putBlock(ConduitBlocks.CONDUIT(), RenderLayer.getCutout())
         ConduitNetworking.registerClientReceiver()

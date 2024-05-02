@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier
 data object ConduitItems : Registrar<Item>(Registries.ITEM) {
     val CONDUITS = mutableListOf<() -> ConduitBlockItem>()
     val CONDUIT_GROUP = FabricItemGroup.builder().displayName(Text.translatable("enderio-conduits.itemgroup")).entries { displayContext, entries ->
-        entries.addAll(items.map { (it.invoke() as Item).defaultStack })
+        entries.addAll(CONDUITS.map { it().defaultStack })
     }.build()
 
     val ENERGY = registerConduitItem(EnderConduitTypes.ENERGY, "energy")

@@ -34,19 +34,19 @@ class EnergyConduitType : SimpleConduitType<EnergyExtendedData>(
         )
     }
 
-    override fun <K> proxyLookup(
-        lookup: BlockApiLookup<K, Direction?>,
+    override fun <A, C> proxyLookup(
+        lookup: BlockApiLookup<A, C>,
         extendedConduitData: EnergyExtendedData,
         world: World,
         pos: BlockPos,
         direction: Direction?,
         state: InWorldNode.IOState?
-    ): K? {
+    ): A? {
         if (EnergyStorage.SIDED === lookup && state?.isExtract() != false && (direction == null || world.getBlockState(
                 pos.offset(direction)
             ).isIn(ConduitTags.Blocks.ENERGY_CABLE))
         ) {
-            @Suppress("UNCHECKED_CAST") return extendedConduitData.lookup as? K
+            @Suppress("UNCHECKED_CAST") return extendedConduitData.lookup as? A
         }
         return null
     }

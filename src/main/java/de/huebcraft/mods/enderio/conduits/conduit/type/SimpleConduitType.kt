@@ -2,8 +2,8 @@ package de.huebcraft.mods.enderio.conduits.conduit.type
 
 import de.huebcraft.mods.enderio.conduits.conduit.IClientConduitData
 import de.huebcraft.mods.enderio.conduits.conduit.IConduitMenuData
-import de.huebcraft.mods.enderio.conduits.conduit.ticker.IConduitTicker
 import de.huebcraft.mods.enderio.conduits.conduit.IExtendedConduitData
+import de.huebcraft.mods.enderio.conduits.conduit.ticker.IConduitTicker
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World

@@ -31,8 +31,6 @@ import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventories
-import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
@@ -88,7 +86,8 @@ class ConduitBlockEntity(
         bundle.getNodeFor(type).extendedConduitData.readNbt(nbt)
     }
 
-    private fun onLoad() {
+    // TODO Call onLoad at the right time
+    fun onLoad() {
         updateShape()
         val serverWorld = world as? ServerWorld ?: return
         sync()
@@ -226,7 +225,6 @@ class ConduitBlockEntity(
         super.setWorld(world)
         if (!world.isClient) {
             loadFromSaveData()
-            onLoad()
         }
     }
 
@@ -441,17 +439,17 @@ class ConduitBlockEntity(
 
     companion object {
         @Suppress("UNCHECKED_CAST")
-        fun <T, Z : IExtendedConduitData<Z>> createConduitLookup(lookup: BlockApiLookup<T, Direction?>): BiFunction<ConduitBlockEntity, Direction?, T?> {
+        fun <A, C, Z : IExtendedConduitData<Z>> createConduitLookup(lookup: BlockApiLookup<A, C>): BiFunction<ConduitBlockEntity, C, A?> {
             return BiFunction { entity, dir ->
                 for (type in entity.bundle.types) {
                     type as IConduitType<Z>
                     val node = entity.bundle.getNodeFor(type)
                     var state: InWorldNode.IOState? = null
-                    if (dir != null) {
+                    if (dir is Direction) {
                         state = node.getIOState(dir)
                     }
                     val proxiedLookup = type.proxyLookup(
-                        lookup, node.extendedConduitData, entity.world!!, entity.pos, dir, state
+                        lookup, node.extendedConduitData, entity.world!!, entity.pos, dir as? Direction, state
                     ) ?: continue
                     return@BiFunction proxiedLookup
                 }
