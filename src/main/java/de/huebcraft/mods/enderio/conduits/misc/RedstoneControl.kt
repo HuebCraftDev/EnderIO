@@ -1,16 +1,17 @@
 package de.huebcraft.mods.enderio.conduits.misc
 
 import de.huebcraft.mods.enderio.build.BuildConstants
+import de.huebcraft.mods.enderio.conduits.lang.ConduitTranslationKeys
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
 import org.joml.Vector2ic
 
 enum class RedstoneControl(val isActive: (Boolean) -> Boolean, override val tooltip: Text): IIcon {
-    ALWAYS_ACTIVE({true}, Text.translatable("enderio_conduits.redstone.always_active")),
-    ACTIVE_WITH_SIGNAL({it}, Text.translatable("enderio_conduits.redstone.active_with_signal")),
-    ACTIVE_WITHOUT_SIGNAL({!it}, Text.translatable("enderio_conduits.redstone.active_without_signal")),
-    NEVER_ACTIVE({false}, Text.translatable("enderio_conduits.redstone.never_active"));
+    ALWAYS_ACTIVE({true}, Text.translatable(ConduitTranslationKeys.Redstone.ALWAYS_ACTIVE)),
+    ACTIVE_WITH_SIGNAL({it}, Text.translatable(ConduitTranslationKeys.Redstone.ACTIVE_WITH_SIGNAL)),
+    ACTIVE_WITHOUT_SIGNAL({!it}, Text.translatable(ConduitTranslationKeys.Redstone.ACTIVE_WITHOUT_SIGNAL)),
+    NEVER_ACTIVE({false}, Text.translatable(ConduitTranslationKeys.Redstone.NEVER_ACTIVE));
 
     private val pos = Vector2i(16 * ordinal, 0)
 

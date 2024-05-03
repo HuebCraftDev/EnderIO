@@ -25,7 +25,7 @@ interface IClientConduitData<T : IExtendedConduitData<T>> : IIcon {
         extendedData: T,
         updateData: ((T) -> T) -> Unit,
         direction: () -> Direction,
-        widgetsStart: Vector2i
+        widgetsStart: Vector2ic
     ): List<ClickableWidget> = listOf()
 
     fun emitConnectionQuads(

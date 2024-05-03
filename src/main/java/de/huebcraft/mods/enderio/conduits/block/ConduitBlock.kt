@@ -212,7 +212,11 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
     ): ActionResult? {
         val openInformation = getOpenInformation(blockEntity, hit) ?: return null
         if (player is ServerPlayerEntity) {
-            player.openHandledScreen(blockEntity.getScreenHandlerFactory(openInformation.direction, openInformation.type))
+            player.openHandledScreen(
+                blockEntity.getScreenHandlerFactory(
+                    openInformation.direction, openInformation.type
+                )
+            )
         }
         return ActionResult.success(isClient)
     }
@@ -245,7 +249,9 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
         for (potential in Direction.entries) {
             if (conduit.world!!.getBlockEntity(conduit.pos.offset(potential)) !is ConduitBlockEntity) {
                 for (potentialType in bundle.types) {
-                    if (canBeValidConnection(conduit, potentialType, potential)) return OpenInformation(potential, potentialType)
+                    if (canBeValidConnection(conduit, potentialType, potential)) return OpenInformation(
+                        potential, potentialType
+                    )
                 }
             }
         }
@@ -258,18 +264,17 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
         if (world !is ClientWorld) return super.getPickStack(world, pos, state)
         val conduit = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return super.getPickStack(world, pos, state)
         val player = MinecraftClient.getInstance().player!!
-        if (state.getOrEmpty(WATERLOGGED).orElse(false)) {
-            val hitResult = ItemAccessor.invokeRaycast(world, player, RaycastContext.FluidHandling.NONE)
-            if (hitResult.type === HitResult.Type.MISS) return ItemStack.EMPTY
+        val hitResult = ItemAccessor.invokeRaycast(world, player, RaycastContext.FluidHandling.NONE)
+        if (hitResult.type === HitResult.Type.MISS) return ItemStack.EMPTY
 
-            if (hitResult.blockPos == pos) {
-                return conduit.shape.getConduit(pos, hitResult)?.getConduitItem()?.defaultStack ?: super.getPickStack(
-                    world, pos, state
-                )
-            }
+        if (hitResult.blockPos == pos) {
+            return conduit.shape.getConduit(pos, hitResult)?.getConduitItem()?.defaultStack ?: super.getPickStack(
+                world, pos, state
+            )
+        } else {
+            val otherState = world.getBlockState(hitResult.blockPos)
+            return otherState.block.getPickStack(world, hitResult.blockPos, otherState)
         }
-
-        return super.getPickStack(world, pos, state)
     }
 
     override fun <T : BlockEntity?> getTicker(
@@ -327,11 +332,14 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
     override fun `enderio$emitsRedstone`(
         state: BlockState, world: BlockView, pos: BlockPos, direction: Direction?
     ): Boolean {
-        // FIXME connection state not set (enderio issue)
+        // FIXME connection state not set early enough (enderio issue)
         val be = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return false
-        return direction != null && be.bundle.types.contains(EnderConduitTypes.REDSTONE()) && be.bundle.getConnection(
+        if (direction == null) return false
+        if (!be.bundle.types.contains(EnderConduitTypes.REDSTONE())) return false
+        val connState = be.bundle.getConnection(
             direction.opposite
-        ).getConnectionState(EnderConduitTypes.REDSTONE()) is IConnectionState.DynamicConnectionState
+        ).getConnectionState(EnderConduitTypes.REDSTONE())
+        return connState is IConnectionState.DynamicConnectionState
     }
 
     @Deprecated("Deprecated in Java")

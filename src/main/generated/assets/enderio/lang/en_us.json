@@ -1,0 +1,16 @@
+{
+  "enderio.conduits.itemgroup": "EnderIO - Conduits",
+  "enderio.redstone.active_with_signal": "Active with Signal",
+  "enderio.redstone.active_without_signal": "Active without Signal",
+  "enderio.redstone.always_active": "Always Active",
+  "enderio.redstone.never_active": "Never Active",
+  "gui.enderio.conduit.extract": "Extract",
+  "gui.enderio.conduit.insert": "Insert",
+  "gui.enderio.conduit_channel": "Conduit-Channel",
+  "gui.enderio.redstone.mode": "Redstone Mode",
+  "gui.enderio.redstone_channel": "Redstone-Channel",
+  "gui.enderio.round_robin.disabled": "Round Robin Disabled",
+  "gui.enderio.round_robin.enabled": "Round Robin Enabled",
+  "gui.enderio.self_feed.disabled": "Self Feed Disabled",
+  "gui.enderio.self_feed.enabled": "Self Feed Enabled"
+}

@@ -11,6 +11,7 @@ import de.huebcraft.mods.enderio.conduits.conduit.IExtendedConduitData
 import de.huebcraft.mods.enderio.conduits.conduit.SlotType
 import de.huebcraft.mods.enderio.conduits.conduit.connection.IConnectionState
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
+import de.huebcraft.mods.enderio.conduits.lang.ConduitTranslationKeys
 import de.huebcraft.mods.enderio.conduits.misc.ColorControl
 import de.huebcraft.mods.enderio.conduits.misc.RedstoneControl
 import de.huebcraft.mods.enderio.conduits.mixin.ScreenAccessor
@@ -100,10 +101,10 @@ class ConduitScreen(
 
     override fun drawForeground(context: DrawContext, mouseX: Int, mouseY: Int) {
         val menuData = handler.conduitType.menuData
-        context.drawText(textRenderer, Text.translatable("gui.enderio.conduit.insert"), 22 + 16, 7 + 4, 4210752, false)
+        context.drawText(textRenderer, Text.translatable(ConduitTranslationKeys.Gui.Conduit.INSERT), 22 + 16, 7 + 4, 4210752, false)
         if (menuData.showBothEnable) {
             context.drawText(
-                textRenderer, Text.translatable("gui.enderio.conduit.extract"), 112 + 16, 7 + 4, 4210752, false
+                textRenderer, Text.translatable(ConduitTranslationKeys.Gui.Conduit.EXTRACT), 112 + 16, 7 + 4, 4210752, false
             )
         }
     }
@@ -137,7 +138,7 @@ class ConduitScreen(
                             getDynStateOrDefault({ it.insert }, ColorControl.GREEN)
                         },
                         { color -> changeDynState { it.withColor(false, color) } },
-                        Text.translatable("gui.enderio.conduit_channel")
+                        Text.translatable(ConduitTranslationKeys.Gui.Conduit.CHANNEL)
                     )
                 )
             }
@@ -150,7 +151,7 @@ class ConduitScreen(
                             getDynStateOrDefault({ it.extract }, ColorControl.GREEN)
                         },
                         { color -> changeDynState { it.withColor(true, color) } },
-                        Text.translatable("gui.enderio.conduit_channel")
+                        Text.translatable(ConduitTranslationKeys.Gui.Conduit.CHANNEL)
                     )
                 )
             }
@@ -165,7 +166,7 @@ class ConduitScreen(
                             )
                         },
                         { mode -> changeDynState { it.withRedstoneMode(mode) } },
-                        Text.translatable("gui.enderio.redstone.mode")
+                        Text.translatable(ConduitTranslationKeys.Gui.Redstone.MODE)
                     )
                 )
                 addTypedButton(
@@ -178,7 +179,7 @@ class ConduitScreen(
                             )
                         },
                         { color -> changeDynState { it.withRedstoneChannel(color) } },
-                        Text.translatable("gui.enderio.redstone_channel")
+                        Text.translatable(ConduitTranslationKeys.Gui.Redstone.CHANNEL)
                     )
                 )
             }

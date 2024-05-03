@@ -3,6 +3,7 @@ package de.huebcraft.mods.enderio.conduits.init
 import de.huebcraft.mods.enderio.build.BuildConstants
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
 import de.huebcraft.mods.enderio.conduits.item.ConduitBlockItem
+import de.huebcraft.mods.enderio.conduits.lang.ConduitTranslationKeys
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.minecraft.item.Item
@@ -13,12 +14,16 @@ import net.minecraft.util.Identifier
 
 data object ConduitItems : Registrar<Item>(Registries.ITEM) {
     val CONDUITS = mutableListOf<() -> ConduitBlockItem>()
-    val CONDUIT_GROUP = FabricItemGroup.builder().displayName(Text.translatable("enderio-conduits.itemgroup")).entries { displayContext, entries ->
+    val CONDUIT_GROUP = FabricItemGroup.builder().displayName(Text.translatable(ConduitTranslationKeys.ITEM_GROUP)).entries { displayContext, entries ->
         entries.addAll(CONDUITS.map { it().defaultStack })
     }.build()
 
     val ENERGY = registerConduitItem(EnderConduitTypes.ENERGY, "energy")
     val REDSTONE = registerConduitItem(EnderConduitTypes.REDSTONE, "redstone")
+    val ITEM = registerConduitItem(EnderConduitTypes.ITEM, "item")
+    val FLUID = registerConduitItem(EnderConduitTypes.FLUID1, "fluid")
+    val PRESSURIZED_FLUID = registerConduitItem(EnderConduitTypes.FLUID2, "pressurized_fluid")
+    val ENDER_FLUID = registerConduitItem(EnderConduitTypes.FLUID3, "ender_fluid")
 
 
     private fun registerConduitItem(type: () -> IConduitType<*>, name: String): () -> ConduitBlockItem {

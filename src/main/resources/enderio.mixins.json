@@ -11,8 +11,7 @@
     "RedstoneViewMixin",
     "RedstoneWireBlockMixin",
     "RegistriesMixin",
-    "SlotAccessor",
-    "WorldMixin"
+    "SlotAccessor"
   ],
   "client": [
     "ClientPlayerInteractionManagerMixin",

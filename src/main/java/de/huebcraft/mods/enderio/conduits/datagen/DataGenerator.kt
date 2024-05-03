@@ -14,5 +14,6 @@ internal object DataGenerator : DataGeneratorEntrypoint {
         val pack = fabricDataGenerator.createPack()
         pack.addProvider(::ConduitTagProvider)
         pack.addProvider(::ConduitModelProvider)
+        pack.addProvider(::ConduitEnglishLanguageProvider)
     }
 }

@@ -63,6 +63,8 @@ class ConduitBlockEntity(
     private var lazyNodeNbt: NbtList = NbtList()
     private val lazyNodes = mutableMapOf<IConduitType<*>, InWorldNode<*>>()
 
+    private var firstTick = true
+
     fun updateClient() {
         clientData = bundle.createRenderData()
         updateShape()
@@ -86,7 +88,6 @@ class ConduitBlockEntity(
         bundle.getNodeFor(type).extendedConduitData.readNbt(nbt)
     }
 
-    // TODO Call onLoad at the right time
     fun onLoad() {
         updateShape()
         val serverWorld = world as? ServerWorld ?: return
@@ -133,9 +134,13 @@ class ConduitBlockEntity(
             sync()
             world.markDirty(pos)
         }
-    }
+    }   
 
     override fun tick(world: World, pos: BlockPos, state: BlockState, blockEntity: ConduitBlockEntity) {
+        if (firstTick) {
+            firstTick = false
+            onLoad()
+        }
         if (!world.isClient) {
             serverTick(world, pos)
             checkConnection = checkConnection.next()
@@ -223,6 +228,7 @@ class ConduitBlockEntity(
 
     override fun setWorld(world: World) {
         super.setWorld(world)
+        firstTick = true
         if (!world.isClient) {
             loadFromSaveData()
         }
