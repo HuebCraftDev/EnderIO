@@ -54,7 +54,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
-    include(modApi("teamreborn:energy:2.3.0") {
+    include(modApi("teamreborn:energy:3.0.0") {
         isTransitive = false
     })
     include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.5")!!)!!)

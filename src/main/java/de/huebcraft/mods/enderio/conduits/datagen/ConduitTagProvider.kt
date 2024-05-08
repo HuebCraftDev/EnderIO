@@ -24,7 +24,8 @@ class ConduitTagProvider(
             Blocks.DROPPER,
             Blocks.POWERED_RAIL,
             Blocks.ACTIVATOR_RAIL,
-            Blocks.MOVING_PISTON
+            Blocks.MOVING_PISTON,
+            Blocks.REDSTONE_WIRE
         ).forceAddTag(BlockTags.DOORS).forceAddTag(BlockTags.TRAPDOORS).forceAddTag(BlockTags.REDSTONE_ORES).addOptional(
             Identifier("c", "redstone_dusts")
         )

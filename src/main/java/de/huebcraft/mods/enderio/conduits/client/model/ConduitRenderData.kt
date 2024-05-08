@@ -1,10 +1,8 @@
 package de.huebcraft.mods.enderio.conduits.client.model
 
 import de.huebcraft.mods.enderio.conduits.conduit.IExtendedConduitData
-import de.huebcraft.mods.enderio.conduits.misc.ColorControl
 import de.huebcraft.mods.enderio.conduits.conduit.connection.IConnectionState
 import de.huebcraft.mods.enderio.conduits.conduit.type.IConduitType
-import de.huebcraft.mods.enderio.conduits.misc.RedstoneControl
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.BlockState
@@ -18,15 +16,4 @@ data class ConduitRenderData(
 ) {
 
     data class ConnectionData(val connectionStates: List<Pair<IConduitType<*>, IConnectionState>>)
-
-    data class ConnectionStateData(
-        val staticConnection: IConnectionState.StaticConnectionStates?,
-        val insert: ColorControl?,
-        val extract: ColorControl?,
-        val control: RedstoneControl?,
-        val redstoneChannel: ColorControl?
-    ) {
-        fun isConnection() =
-            staticConnection == null || staticConnection === IConnectionState.StaticConnectionStates.CONNECTED || staticConnection === IConnectionState.StaticConnectionStates.CONNECTED_ACTIVE
-    }
 }

@@ -30,7 +30,7 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.joml.Vector2i
-import java.util.function.Function
+
 
 @Environment(EnvType.CLIENT)
 class ConduitScreen(
@@ -210,6 +210,7 @@ class ConduitScreen(
     }
 
     private fun <T : IExtendedConduitData<T>> createWidgetsUnsafe(clientData: IClientConduitData<T>) {
+        @Suppress("UNCHECKED_CAST")
         clientData.createWidgets(
             this,
             getBundle().getNodeFor(handler.conduitType).extendedConduitData as T,

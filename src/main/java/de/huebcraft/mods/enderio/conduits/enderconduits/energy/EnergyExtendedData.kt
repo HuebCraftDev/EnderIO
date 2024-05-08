@@ -5,21 +5,68 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
+import net.minecraft.util.math.Direction
 import team.reborn.energy.api.EnergyStorage
 import kotlin.math.min
 
 class EnergyExtendedData : IExtendedConduitData<EnergyExtendedData> {
+    companion object {
+        const val ENERGY_STORED: String = "EnergyStored"
+        const val ENERGY_MAX_STORED: String = "MaxEnergyStored"
+    }
+
+    private val energySidedData = mutableMapOf<Direction, EnergySidedData>()
     val lookup: EnergyStorage = ConduitEnergyStorage(this)
 
     var capacity = 500L
     var stored = 0L
 
     override fun writeNbt(): NbtCompound {
-        // TODO
-        return NbtCompound()
+        val tag = NbtCompound()
+        for (direction in Direction.entries) {
+            val sidedData = energySidedData[direction]
+            if (sidedData != null) {
+                tag.put(direction.name, sidedData.writeNbt())
+            }
+        }
+        tag.putLong(ENERGY_MAX_STORED, capacity)
+        tag.putLong(ENERGY_STORED, stored)
+        return tag
     }
 
     override fun readNbt(nbt: NbtCompound) {
+        energySidedData.clear()
+        for (direction in Direction.entries) {
+            if (nbt.contains(direction.name)) {
+                energySidedData[direction] = EnergySidedData.readNbt(nbt.getCompound(direction.name))
+            }
+        }
+        if (nbt.contains(ENERGY_MAX_STORED)) {
+            capacity = nbt.getLong(ENERGY_MAX_STORED).coerceAtLeast(500)
+        }
+        if (nbt.contains(ENERGY_STORED)) {
+            stored = nbt.getLong(ENERGY_STORED)
+        }
+    }
+
+    private class EnergySidedData {
+        var rotatingIndex = 0
+        companion object {
+            private val KEY_ROTATING_INDEX = "RotatingIndex"
+
+            fun readNbt(nbt: NbtCompound): EnergySidedData {
+                val energyData = EnergySidedData()
+                if (nbt.contains(KEY_ROTATING_INDEX, NbtElement.INT_TYPE.toInt()))
+                    energyData.rotatingIndex = nbt.getInt(KEY_ROTATING_INDEX)
+                return energyData
+            }
+        }
+        fun writeNbt(): NbtCompound {
+            val nbt = NbtCompound()
+            nbt.putInt(KEY_ROTATING_INDEX, rotatingIndex)
+            return NbtCompound()
+        }
     }
 
     @Suppress("UnstableApiUsage")

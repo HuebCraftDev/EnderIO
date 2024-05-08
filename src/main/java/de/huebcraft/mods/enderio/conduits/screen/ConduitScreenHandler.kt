@@ -25,7 +25,7 @@ class ConduitScreenHandler(
     var conduitType: IConduitType<*>
 ) : ScreenHandler(ConduitScreenHandlers.CONDUIT_SCREEN_HANDLER(), syncId) {
     val conduitSlots = mutableListOf<ConduitSlot>()
-    val playerInvSlots = mutableListOf<Slot>()
+    private val playerInvSlots = mutableListOf<Slot>()
 
     init {
         if (blockEntity != null) {

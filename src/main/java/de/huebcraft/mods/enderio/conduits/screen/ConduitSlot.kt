@@ -32,10 +32,10 @@ class ConduitSlot(
     fun updateVisibilityPosition() {
         if (isVisible()) {
             (this as SlotAccessor).setX(slotType.x)
-            (this as SlotAccessor).setX(slotType.y)
+            (this as SlotAccessor).setY(slotType.y)
         } else {
             (this as SlotAccessor).setX(Int.MIN_VALUE)
-            (this as SlotAccessor).setX(Int.MIN_VALUE)
+            (this as SlotAccessor).setY(Int.MIN_VALUE)
         }
     }
 

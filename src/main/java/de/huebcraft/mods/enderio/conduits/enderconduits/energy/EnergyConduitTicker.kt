@@ -27,7 +27,10 @@ class EnergyConduitTicker : LookupAwareConduitTicker<EnergyStorage>() {
             val extendedData = node.extendedConduitData as EnergyExtendedData
             val energy = extendedData.lookup
             if (energy.amount == 0L) {
+                extendedData.capacity = 500
+                continue
             }
+            val prevStored = energy.amount
         }
     }
 
