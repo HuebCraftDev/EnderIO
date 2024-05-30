@@ -332,14 +332,13 @@ class ConduitBlock(settings: Settings) : BlockWithEntity(settings), Waterloggabl
     override fun `enderio$emitsRedstone`(
         state: BlockState, world: BlockView, pos: BlockPos, direction: Direction?
     ): Boolean {
-        // FIXME connection state not set early enough (enderio issue)
         val be = world.getBlockEntity(pos) as? ConduitBlockEntity ?: return false
         if (direction == null) return false
         if (!be.bundle.types.contains(EnderConduitTypes.REDSTONE())) return false
         val connState = be.bundle.getConnection(
             direction.opposite
         ).getConnectionState(EnderConduitTypes.REDSTONE())
-        return connState is IConnectionState.DynamicConnectionState
+        return connState is IConnectionState.DynamicConnectionState || connState === IConnectionState.StaticConnectionStates.DISCONNECTED
     }
 
     @Deprecated("Deprecated in Java")
