@@ -10,6 +10,7 @@ import de.huebcraft.mods.enderio.conduits.init.ConduitItems
 import de.huebcraft.mods.enderio.conduits.init.ConduitTypes
 import de.huebcraft.mods.enderio.conduits.init.ModBlockEntities
 import de.huebcraft.mods.enderio.conduits.item.ConduitBlockItem
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -37,5 +38,10 @@ class AE2Integration : EnderIOPlugin {
         IInWorldGridNodeHost.LOOKUP.registerForBlockEntity(
             ConduitBlockEntity.createConduitLookup(IInWorldGridNodeHost.LOOKUP), ModBlockEntities.CONDUIT_BLOCK_ENTITY()
         )
+    }
+
+    override fun onEnglishTranslationsAdded(translationBuilder: FabricLanguageProvider.TranslationBuilder) {
+        translationBuilder.add(DENSE_ITEM(), "ME Dense Conduit")
+        translationBuilder.add(NORMAL_ITEM(), "ME Conduit")
     }
 }

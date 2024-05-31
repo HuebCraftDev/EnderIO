@@ -34,5 +34,6 @@ class ConduitModelProvider(output: FabricDataOutput) : FabricModelProvider(outpu
         for (conduitSupplier in ConduitItems.CONDUITS) {
             generateConduitModel(conduitSupplier(), itemModelGenerator)
         }
+        itemModelGenerator.register(ConduitItems.CREATIVE_ENDERFACE_CONDUIT(), Models.GENERATED)
     }
 }

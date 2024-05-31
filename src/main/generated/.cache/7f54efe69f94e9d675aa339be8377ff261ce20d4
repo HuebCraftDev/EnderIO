@@ -1,10 +1,11 @@
-// 1.20.1	2024-05-05T22:50:44.148321002	Enderio/Model Definitions
-a933637306e94756e229647b20e544c17a3ae140 assets/enderio/models/item/pressurized_fluid_conduit.json
+// 1.20.1	2024-05-31T00:49:12.478349282	Enderio/Model Definitions
 40bd0b47d351f98df20d1190443648e4fc1e93bd assets/enderio/blockstates/conduit.json
 64ba4145f7271722594ef7043d531c0936768d17 assets/enderio/models/item/fluid_conduit.json
+a933637306e94756e229647b20e544c17a3ae140 assets/enderio/models/item/pressurized_fluid_conduit.json
 cd660315973cda104f2122a769c099a5fd02965e assets/enderio/models/item/ender_fluid_conduit.json
-161629310e5e95f54beafef368424900245d8ee8 assets/enderio/models/item/redstone_conduit.json
-ad8c55baf98f399c792ba7bdc9aafc1fccf42b7a assets/enderio/models/item/energy_conduit.json
 f8951ecc83baf3ce0534919f2098019fd890e4ac assets/enderio/models/item/dense_me_conduit.json
 ac566535484853c354a85255b15cc7c33cd88a06 assets/enderio/models/item/item_conduit.json
 c66cdc24c23b9d49b1b07c8c1d3e2a16202470f0 assets/enderio/models/item/me_conduit.json
+161629310e5e95f54beafef368424900245d8ee8 assets/enderio/models/item/redstone_conduit.json
+ad8c55baf98f399c792ba7bdc9aafc1fccf42b7a assets/enderio/models/item/energy_conduit.json
+43ce22edaff448eb11b53e598bed333180ef1926 assets/enderio/models/item/enderface_conduits.json

@@ -23,7 +23,6 @@ internal object ClientMain : ClientModInitializer {
         ModelLoadingPlugin.register(ConduitModelLoadingPlugin())
         LOGGER.info("ClientMain has been initialized")
         // TODO Conduit tint for facade
-        // TODO Translations
         HandledScreens.register(ConduitScreenHandlers.CONDUIT_SCREEN_HANDLER(), ::ConduitScreen)
         BlockRenderLayerMap.INSTANCE.putBlock(ConduitBlocks.CONDUIT(), RenderLayer.getCutout())
         ConduitNetworking.registerClientReceiver()

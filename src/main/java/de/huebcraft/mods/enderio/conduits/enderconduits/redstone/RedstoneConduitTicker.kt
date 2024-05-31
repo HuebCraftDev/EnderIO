@@ -18,6 +18,7 @@ class RedstoneConduitTicker : IIOAwareConduitTicker {
 
     private val activeColors = arrayListOf<ColorControl>()
 
+    // FIXME Redstone update on channel switch
     override fun canConnectTo(world: World, pos: BlockPos, direction: Direction): Boolean {
         val neighbor = pos.offset(direction)
         val state = world.getBlockState(neighbor)

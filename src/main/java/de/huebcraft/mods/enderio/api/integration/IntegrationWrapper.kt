@@ -9,4 +9,6 @@ class IntegrationWrapper<T : EnderIOPlugin>(val modId: String, supplier: () -> T
     init {
         if (value != null) IntegrationManager.ALL_INTEGRATIONS.add(value)
     }
+
+    fun isLoaded(): Boolean = value != null
 }

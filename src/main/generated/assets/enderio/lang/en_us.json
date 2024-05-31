@@ -12,5 +12,13 @@
   "gui.enderio.round_robin.disabled": "Round Robin Disabled",
   "gui.enderio.round_robin.enabled": "Round Robin Enabled",
   "gui.enderio.self_feed.disabled": "Self Feed Disabled",
-  "gui.enderio.self_feed.enabled": "Self Feed Enabled"
+  "gui.enderio.self_feed.enabled": "Self Feed Enabled",
+  "item.enderio.dense_me_conduit": "ME Dense Conduit",
+  "item.enderio.ender_fluid_conduit": "Ender Fluid Conduit",
+  "item.enderio.energy_conduit": "Energy Conduit",
+  "item.enderio.fluid_conduit": "Fluid Conduit",
+  "item.enderio.item_conduit": "Item Conduit",
+  "item.enderio.me_conduit": "ME Conduit",
+  "item.enderio.pressurized_fluid_conduit": "Pressurized Fluid Conduit",
+  "item.enderio.redstone_conduit": "Redstone Conduit"
 }

@@ -1,5 +1,7 @@
 package de.huebcraft.mods.enderio.conduits.datagen
 
+import de.huebcraft.mods.enderio.api.integration.IntegrationManager
+import de.huebcraft.mods.enderio.conduits.init.ConduitItems
 import de.huebcraft.mods.enderio.conduits.lang.ConduitTranslationKeys
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider
@@ -27,5 +29,14 @@ class ConduitEnglishLanguageProvider(dataOutput: FabricDataOutput) :
         translationBuilder.add(ConduitTranslationKeys.Redstone.ACTIVE_WITH_SIGNAL, "Active with Signal")
         translationBuilder.add(ConduitTranslationKeys.Redstone.ACTIVE_WITHOUT_SIGNAL, "Active without Signal")
         translationBuilder.add(ConduitTranslationKeys.Redstone.NEVER_ACTIVE, "Never Active")
+
+        translationBuilder.add(ConduitItems.ENERGY(), "Energy Conduit")
+        translationBuilder.add(ConduitItems.REDSTONE(), "Redstone Conduit")
+        translationBuilder.add(ConduitItems.ITEM(), "Item Conduit")
+        translationBuilder.add(ConduitItems.FLUID(), "Fluid Conduit")
+        translationBuilder.add(ConduitItems.PRESSURIZED_FLUID(), "Pressurized Fluid Conduit")
+        translationBuilder.add(ConduitItems.ENDER_FLUID(), "Ender Fluid Conduit")
+
+        IntegrationManager.ALL_INTEGRATIONS.forEach { it.onEnglishTranslationsAdded(translationBuilder) }
     }
 }
